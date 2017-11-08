@@ -1,0 +1,75 @@
+#!/bin/bash
+# A CSSH like CLI tool 
+SESSION=CSSH
+WINDOWS=1
+USER=""
+
+if [ -z $USER ]; then
+  USER=$(whoami)
+  echo "Using user $USER"
+fi
+
+function tmuxKillSession(){
+  tmux kill-session -a -t $SESSION
+}
+
+function tmuxSessionOpen(){
+  tmux kill-session  -t $SESSION
+  tmux -2 new-session -d -s $SESSION
+  # Make Ctl-a the send-prefix
+  tmux unbind C-b
+  tmux set -g prefix C-a
+  tmux bind C-a send-prefix
+  tmux bind a setw synchronize-panes on
+  tmux bind q setw synchronize-panes off
+}
+
+function sendCommandToWindow(){
+ # $1 is pane $2 is command
+ tmux select-pane -t "$1"
+ tmux send-keys -t "$1"  "$2 " Enter > /dev/null 2>&1
+}
+
+function addWindow(){
+  if (( $WINDOWS % 2 == 0 )); then
+    #even so split horizontal
+    tmux select-pane -t $[$WINDOWS - 2]
+    tmux split-window -h
+    WINDOWS=$[$WINDOWS + 1]
+  else
+    #odd so split vertical
+    tmux select-pane -t $[$WINDOWS - 2]
+    tmux split-window -v
+    WINDOWS=$[$WINDOWS + 1]
+  fi
+
+}
+
+function attachScreen(){
+ tmux setw synchronize-panes on
+ tmux a -t $SESSION
+}
+
+tmuxKillSession
+tmuxSessionOpen
+# Create panes
+for i in "$@"; do
+  echo $i
+  if [ $WINDOWS -eq 1 ]; then
+    WINDOWS=$[$WINDOWS + 1]
+  else
+    addWindow $i
+    tmux select-layout tiled
+  fi
+done
+# SSH to servers
+PANE=0
+for i in "$@";do
+  sendCommandToWindow $PANE "eval `ssh-agent`"
+  sendCommandToWindow $PANE "ssh-add"
+  sendCommandToWindow $PANE "clear"
+  sendCommandToWindow $PANE "ssh $USER@$i"
+  PANE=$[$PANE + 1]
+done
+
+attachScreen
