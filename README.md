@@ -11,6 +11,6 @@ Bound Keys are:
 CTL-A for for prefix key
 CTL-A + a bind keys to all panes (default)
 CTL-A + q unbind keys from all but active pane
-CTL-A + <arrow key> change active pane (standard)
+CTL-A + "arrow key" change active pane (standard)
 All other Tmux commands are standard (remembering the prefix key is CTL-A)
 </pre>
