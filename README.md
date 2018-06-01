@@ -14,3 +14,5 @@ CTL-A + q unbind keys from all but active pane
 CTL-A + "arrow key" change active pane (standard)
 All other Tmux commands are standard (remembering the prefix key is CTL-A)
 </pre>
+
+Lincense: GPLV3 100% open and free. Use this software as you see fit, mod it, hack it, pull request if you have an improvment! 
